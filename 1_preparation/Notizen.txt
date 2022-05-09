@@ -1,0 +1,160 @@
+1. Alle Daten mit einem Crawler geholt. (Braucht hauptseite und lädt dann automatisch alle daten unter recent und historical)
+
+2. Tabellen zusammengeführt, weil alle von der Struktur gleich waren, und nur in einzelne Wetterstationen unterteilt waren.
+Struktur:
+Metadaten_Fehldaten:
+Stations_ID	Stations_Name	Parameter	Von_Datum	Bis_Datum	Gesamt_Fehlwerte	Beschreibung
+Stations_ID	Stations_Name	Parameter	Von_Datum	Bis_Datum	Anzahl_Fehlwerte	Beschreibung
+Metadaten_Fehlwerte_Gesamt:
+Stations_ID	Stations_Name	Parameter	Von_Datum	Bis_Datum	Gesamt_Fehlwerte	Beschreibung
+Metadaten_Fehlwerte:
+Stations_ID	Stations_Name	Parameter	Von_Datum	Bis_Datum	Anzahl_Fehlwerte	Beschreibung
+Metadaten_Geographie:
+Stations_id;Stationshoehe;Geogr.Breite;Geogr.Laenge;von_datum;bis_datum;Stationsname
+Metadaten_Geraete_X:
+Stations_ID;Stationsname;Geo. Laenge [Grad];Geo. Breite [Grad];Stationshoehe [m];Geberhoehe ueber Grund [m];Von_Datum;Bis_Datum;Geraetetyp Name;Messverfahren;
+Metadaten_Geraete_X_X:
+Stations_ID;Stationsname;Geo. Laenge [Grad];Geo. Breite [Grad];Stationshoehe [m];Geberhoehe ueber Grund [m];Von_Datum;Bis_Datum;Geraetetyp Name;Messverfahren;
+Metadaten_Parameter_xx_stunde:
+Stations_ID;Von_Datum;Bis_Datum;Stationsname;Parameter;Parameterbeschreibung;Einheit;Datenquelle (Strukturversion=SV);Zusatz-Info;Besonderheiten;Literaturhinweis;
+Metadaten_Stationsname:
+Stations_ID;Stationsname;Von_Datum;Bis_Datum
+produkt_xx_stunde:
+STATIONS_ID	MESS_DATUM	QN_9	TT_TU	RF_TU
+
+3. Zusammenführung von doppelten headern und daten außerhalb unseres betrachteten Zeitraums (2016-2020) bereinigen.
+Führe alle Fehlwerte/daten tabellen (sind 3 stück) zusammen mit folgendem header:
+Metadaten_Fehlwerte (Metadaten_Fehlwerte, Metadaten_Fehldaten, Metadaten_Fehlwerte_Gesamt):
+Stations_ID	Stations_Name	Parameter	Von_Datum	Bis_Datum	Anzahl_Fehlwerte	Beschreibung
+Metadaten_Geraete (Metadaten_Geraete_X, Metadaten_Geraete_X_X):
+Stations_ID;Stationsname;Geo. Laenge [Grad];Geo. Breite [Grad];Stationshoehe [m];Geberhoehe ueber Grund [m];Von_Datum;Bis_Datum;Geraetetyp Name;Messverfahren;
+
+4. Tabellen in Datenbank überführen
+Struktur (Momentan):
+Metadaten_Fehlwerte
+0-Stations_ID: "00044" Integer (5-stellig) (0|5)
+1-Stations_Name: "Großenkneten" String (x-stellig) (3|38)
+2-Parameter: "TT_TU" String (5-stellig) (1|8)
+3-Von_Datum: "30.10.2020" or "17.07.2021-01:00" Date (Date-Format) (0|16)
+4-Bis_Datum: "02.05.2020" or "17.07.2021-12:00" Date (Date-Format) (0|16)
+5-Gesamt_Fehlwerte: "837" Integer (x-stellig) (1|6)
+6-Beschreibung: "Gesamt_Messzeitraum" String (x-stellig) (0|30)
+
+Metadaten_Geographie
+0-Stations_id: "00044" Integer (5-stellig) (0|6)
+1-Stationshoehe: "510.50" Float (4-stellig.2-stellig) (8|8)
+2-Geogr.Breite: "51.1621" Float (3-stellig.4-stellig) (8|8)
+3-Geogr.Laenge: "14.9506" Float (3-stellig.4-stellig) (8|8)
+4-von_datum: "19500401" Date (Date-Format) (8|8)
+5-bis_datum: "20020703" Date (Date-Format) (8|8)
+6-Stationsname: "Großenkneten" String (x-stellig) (1|38)
+
+Metadaten_Geraete
+0-Stations_ID: "00044" Integer (5-stellig) (0|5)
+1-Stationsname: "Großenkneten" String (x-stellig) (3|38)
+2-Geo. Laenge [Grad]: "14.9506" Float (3-stellig.4-stellig) (0|5)
+3-Geo. Breite [Grad]: "51.1621" Float (3-stellig.4-stellig) (0|5)
+4-Stations-hoehe [m]: "202" Integer (4-stellig) (0|7)
+5-Geberhoehe ueber Grund [m]: "2" Float (2-stellig) (0|5)
+6-Von_Datum: "19500401" Date (Date-Format) (8|8)
+7-Bis_Datum: "20020703" Date (Date-Format) (8|8)
+8-Geraetetyp Name: "Hygrograph nach Frankenberg" String (x-stellig) (4|51)
+9-Messverfahren: "Feuchteregistrierung, konv." String (x-stellig) (11|40)
+
+Metadaten_Parameter
+0-Stations_ID: "00044" Integer (5-stellig) (0|5)
+1-Von_Datum: "19500401" Date (Date-Format) (8|8)
+2-Bis_Datum: "20020703" Date (Date-Format) (8|8)
+3-Stationsname: "Großenkneten" String (x-stellig) (3|38)
+4-Parameter: "TT_TU" String (5-stellig) (1|10)
+5-Parameterbeschreibung: "relative Feuchte" String (x-stellig) (10|57)
+6-Einheit: "%" or "°C" or .... String (x-stellig) (0|16)
+7-Datenquelle (Strukturversion=SV): "Daten der Temperatur..." String (x-stellig) (79|188)
+8-Zusatz-Info: "Stundenwerte in MEZ" String (x-stellig) (0|69)
+9-Besonderheiten: "Ab 01.01.2017 dürfen keine Messwerte..." String (x-stellig) (0|1015)
+10-Literaturhinweis: "DWD Pressemitteilung vom 17.12.2020" String (x-stellig) (0|35)
+
+Metadaten_Stationsname
+0-Stations_ID: "00044" Integer (5-stellig) (0|6)
+1-Stationsname: "Großenkneten" String (x-stellig) (1|40)
+2-Von_Datum: "19500401" Date (Date-Format) (8|8)
+3-Bis_Datum: "20020703" Date (Date-Format) (0|8)
+
+
+
+
+Struktur (Neu für Datenbank):
+Metadaten_Fehlwerte
+0-Stations_ID: "00044" Integer (5-stellig)
+3-Von_Datum: "30.10.2020" or "17.07.2021-01:00" Date (Date-Format)
+4-Bis_Datum: "02.05.2020" or "17.07.2021-12:00" Date (Date-Format)
+2-Parameter: "TT_TU" String (5-stellig)
+5-Gesamt_Fehlwerte: "837" Integer (x-stellig)
+6-Beschreibung: "Gesamt_Messzeitraum" String (x-stellig)
+
+Metadaten_Geographie
+0-Stations_ID: "00044" Integer (5-stellig)
+4-Von_Datum: "19500401" Date (Date-Format)
+5-Bis_Datum: "20020703" Date (Date-Format)
+1-Stationshoehe: "510.50" Float (4-stellig.2-stellig)
+x-Geberhoehe ueber Grund [m]: "2" Float (2-stellig) (load that from the Metadaten_Geraete)
+2-Geogr.Breite: "51.1621" Float (3-stellig.4-stellig)
+3-Geogr.Laenge: "14.9506" Float (3-stellig.4-stellig)
+
+Metadaten_Geraete
+0-Stations_ID: "00044" Integer (5-stellig)
+6-Von_Datum: "19500401" Date (Date-Format)
+7-Bis_Datum: "20020703" Date (Date-Format)
+8-Geraetetyp Name: "Hygrograph nach Frankenberg" String (x-stellig)
+9-Messverfahren: "Feuchteregistrierung, konv." String (x-stellig)
+
+Metadaten_Parameter
+0-Stations_ID: "00044" Integer (5-stellig)
+1-Von_Datum: "19500401" Date (Date-Format)
+2-Bis_Datum: "20020703" Date (Date-Format)
+4-Parameter: "TT_TU" String (5-stellig)
+5-Parameterbeschreibung: "relative Feuchte" String (x-stellig)
+6-Einheit: "%" or "°C" or .... String (x-stellig)
+7-Datenquelle (Strukturversion=SV): "Daten der Temperatur und relativen Feuchte (Stundenwerte) aus analogen Registrierungen (Thermohygrograph)" String (x-stellig)
+8-Zusatz-Info: "Stundenwerte in MEZ" String (x-stellig)
+9-Besonderheiten: "Ab 01.01.2017 dürfen keine Messwerte mehr veröffentlicht werden und stehen nicht mehr zum Downloaden zur Verfügung, da die Daten größtenteils nicht repräsentativ für die Region sind. Verantwortlich dafür ist die in den vergangenen Jahren deutlich gewachsene Vegetation in direkter östlicher Nachbarschaft der Station, so u.a. Behinderung des Luftaustausches." String (x-stellig)
+10-Literaturhinweis: "DWD Pressemitteilung vom 17.12.2020" String (x-stellig)
+
+Metadaten_Stationsname
+0-Stations_ID: "00044" Integer (5-stellig)
+2-Von_Datum: "19500401" Date (Date-Format)
+3-Bis_Datum: "20020703" Date (Date-Format)
+1-Stationsname: "Großenkneten" String (x-stellig)
+
+Commands:
+CREATE TABLE Metadaten_Fehlwerte (Stations_ID INT, Von_Datum DATE, Bis_Datum DATE);
+CREATE TABLE Metadaten_Geographie (Stations_ID INT, Von_Datum DATE, Bis_Datum DATE);
+CREATE TABLE Metadaten_Geraete (Stations_ID INT, Von_Datum DATE, Bis_Datum DATE);
+CREATE TABLE Metadaten_Parameter (Stations_ID INT, Von_Datum DATE, Bis_Datum DATE);
+CREATE TABLE Metadaten_Stationsname (Stations_ID INT, Von_Datum DATE, Bis_Datum DATE, Stationsname CHARACTER(70));
+
+
+5. Tabellen umstrukturieren, sodass Stations_ID der primary key ist, und daten wie geo-locations nicht mehrmals in unterschiedlichen tabellen vorkommen.
+
+
+
+
+
+
+
+produkt
+STATIONS_ID	MESS_DATUM	QN_9	TT_TU	RF_TU
+STATIONS_ID	MESS_DATUM	QN_8	 V_N	V_N_I	V_S1_CS	V_S1_CSA	V_S1_HHS	V_S1_NS	V_S2_CS	V_S2_CSA	V_S2_HHS	V_S2_NS	V_S3_CS	V_S3_CSA	V_S3_HHS	V_S3_NS	V_S4_CS	V_S4_CSA	V_S4_HHS	V_S4_NS
+STATIONS_ID	MESS_DATUM	QN_8	V_N_I	 V_N
+STATIONS_ID	MESS_DATUM	QN_8	  TT	  TD
+STATIONS_ID	MESS_DATUM	QN_8	FX_911
+STATIONS_ID	MESS_DATUM	QN_8	ABSF_STD	VP_STD	TF_STD	P_STD	TT_STD	RF_STD	TD_STD
+STATIONS_ID	MESS_DATUM	QN_8	  R1	RS_IND	WRTR
+STATIONS_ID	MESS_DATUM	QN_8	   P	  P0
+STATIONS_ID	MESS_DATUM	QN_2	V_TE002	V_TE005	V_TE010	V_TE020	V_TE050	V_TE100
+STATIONS_ID	MESS_DATUM	QN_592	ATMO_LBERG	FD_LBERG	FG_LBERG	SD_LBERG	ZENIT	MESS_DATUM_WOZ
+STATIONS_ID	MESS_DATUM	QN_7	SD_SO
+STATIONS_ID	MESS_DATUM	QN_8	V_VV_I	V_VV
+STATIONS_ID	MESS_DATUM	QN_8	  WW	WW_Text
+STATIONS_ID	MESS_DATUM	QN_3	   F	   D
+STATIONS_ID	MESS_DATUM	QN_8	  FF	  DD

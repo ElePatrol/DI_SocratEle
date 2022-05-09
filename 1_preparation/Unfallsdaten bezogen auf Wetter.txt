@@ -1,0 +1,19 @@
+Unfall-Daten:
+Bisherige Daten von:
+https://unfallatlas.statistikportal.de/_opendata2021.html
+
+Weitere Interessante Seiten für Unfälle:
+https://www.bast.de/DE/Statistik/statistik-node.html
+https://www.gidas.org/about.html
+
+
+Wetter-Daten:
+https://opendata.dwd.de/climate_environment/CDC/
+observations_germany -> climate -> hourly -> dann spezifische tabelle nutzen (es gibt für temperatur, luftfeuchte tabellen, und dann noch für jede messstation)
+-füge alle benötigten tabellen zusammen (temperatur, extreme wind, moisture, sun, visibility, (weather phenomena), wind
+-da wir die stationen kennen (zuordnen können), kennen wir auch deren position
+
+-join über zeit und ort? Dabei muss der nähste ort und dann von diesem die näheste zeit genommen werden
+
+Darüber gefunden:
+https://www.dwd.de/DE/klimaumwelt/cdc/cdc_node.html
