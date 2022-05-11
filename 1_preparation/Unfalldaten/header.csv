@@ -1,0 +1,18 @@
+FID;OBJECTID;ULAND;UREGBEZ;UKREIS;UGEMEINDE;UJAHR;UMONAT;USTUNDE;UWOCHENTAG;UKATEGORIE;UART;UTYP1;ULICHTVERH;IstStrasse;IstRad;IstPKW;IstFuss;IstKrad;IstGkfz;IstSonstig;LINREFX;LINREFY;XGCSWGS84;YGCSWGS84;;2016
+OBJECTID;UIDENTSTLA;ULAND;UREGBEZ;UKREIS;UGEMEINDE;UJAHR;UMONAT;USTUNDE;UWOCHENTAG;UKATEGORIE;UART;UTYP1;IstRad;IstPKW;IstFuss;IstKrad;IstSonstig;LICHT;STRZUSTAND;LINREFX;LINREFY;XGCSWGS84;YGCSWGS84;;;2017
+OBJECTID_1;ULAND;UREGBEZ;UKREIS;UGEMEINDE;UJAHR;UMONAT;USTUNDE;UWOCHENTAG;UKATEGORIE;UART;UTYP1;ULICHTVERH;IstRad;IstPKW;IstFuss;IstKrad;IstGkfz;IstSonstig;STRZUSTAND;LINREFX;LINREFY;XGCSWGS84;YGCSWGS84;;;2018
+OBJECTID;ULAND;UREGBEZ;UKREIS;UGEMEINDE;UJAHR;UMONAT;USTUNDE;UWOCHENTAG;UKATEGORIE;UART;UTYP1;ULICHTVERH;IstRad;IstPKW;IstFuss;IstKrad;IstGkfz;IstSonstige;LINREFX;LINREFY;XGCSWGS84;YGCSWGS84;STRZUSTAND;;;2019
+OBJECTID;UIDENTSTLAE;ULAND;UREGBEZ;UKREIS;UGEMEINDE;UJAHR;UMONAT;USTUNDE;UWOCHENTAG;UKATEGORIE;UART;UTYP1;ULICHTVERH;IstRad;IstPKW;IstFuss;IstKrad;IstGkfz;IstSonstige;LINREFX;LINREFY;XGCSWGS84;YGCSWGS84;STRZUSTAND;;2020
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+OBJECTID;ULAND;UREGBEZ;UKREIS;UGEMEINDE;UJAHR;UMONAT;USTUNDE;UWOCHENTAG;UKATEGORIE;UART;UTYP1;ULICHTVERH;IstRad;IstPKW;IstFuss;IstKrad;IstGkfz;IstSonstige;LINREFX;LINREFY;XGCSWGS84;YGCSWGS84;STRZUSTAND;;;Zusammen
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;Notizen;;;;;;;;;;;;;;;;;;;;;;;
+;;;Die FID von 2016 wird komplett rausgenommen, da sie in späteren Versionen nicht mehr auftaucht.;;;;;;;;;;;;;;;;;;;;;;;
+;;;Die UIDENTSTLA aus dfen Jahren 2017 und 2020 wird ebenso komplett rausgenommen.;;;;;;;;;;;;;;;;;;;;;;;
+;;;Das Attribut IstStrasse aus 2016 ist mit STRZUSTAND aus den späteren Jahren gleichzusetzen;;;;;;;;;;;;;;;;;;;;;;;
+;;;Das Attribut LICHT aus 2017 ist mit ULICHTVERH aus den anderen Jahren gleichzusetzen;;;;;;;;;;;;;;;;;;;;;;;
+;;;Das Attrubut IstGkfz ist im Jahr 2017 nicht aufzufinden und kann daher mit 0 initialisiert werden;;;;;;;;;;;;;;;;;;;;;;;
