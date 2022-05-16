@@ -1,0 +1,344 @@
+#######################################
+####### Metadaten_Stationsname ########
+#######################################
+
+Select all which occour more than 1 time:
+SELECT *, Count(*)
+FROM Metadaten_Stationsname
+GROUP BY Stations_ID, Von_Datum, Bis_Datum, Stationsname
+HAVING Count(*) > 1
+
+Select all Station_IDs with same parameter and different time:
+SELECT *
+FROM Metadaten_Stationsname
+GROUP BY Stations_ID, Stationsname
+HAVING Count(*) > 1
+
+See the time differences(because we select the Station_IDs, the received data can have different parameters, but at least 2 rows should match):
+SELECT a.*
+FROM Metadaten_Stationsname AS a
+INNER JOIN (SELECT Stations_ID, Stationsname
+	FROM Metadaten_Stationsname
+	GROUP BY Stations_ID, Stationsname
+	HAVING Count(*) > 1) AS b
+     ON a.Stations_ID = b.Stations_ID
+     AND a.Stationsname = b.Stationsname
+ORDER BY Stations_ID, Von_Datum ASC, Bis_Datum DESC
+
+Delete simple duplicates:
+DELETE FROM Metadaten_Stationsname
+    WHERE ID NOT IN
+        (SELECT ID
+           FROM Metadaten_Stationsname
+           GROUP BY Stations_ID, Von_Datum, Bis_Datum, Stationsname)
+
+#######################################
+######### Metadaten_Parameter #########
+#######################################
+
+Select all which occour more than 1 time:
+SELECT *, Count(*)
+FROM Metadaten_Parameter
+GROUP BY Stations_ID, Von_Datum, Bis_Datum, Parameter, Parameterbeschreibung, Einheit, Datenquelle, "Zusatz-Info", Besonderheiten, Literaturhinweis
+HAVING Count(*) > 1
+
+Select all Station_IDs with same parameter and different time:
+SELECT *
+FROM Metadaten_Parameter
+GROUP BY Stations_ID, Parameter, Parameterbeschreibung, Einheit, Datenquelle, "Zusatz-Info", Besonderheiten, Literaturhinweis
+HAVING Count(*) > 1
+
+See the time differences(because we select the Station_IDs, the received data can have different parameters, but at least 2 rows should match):
+SELECT a.*
+FROM Metadaten_Parameter AS a
+INNER JOIN (SELECT *
+	FROM Metadaten_Parameter
+	GROUP BY Stations_ID, Parameter, Parameterbeschreibung, Einheit, Datenquelle, "Zusatz-Info", Besonderheiten, Literaturhinweis
+	HAVING Count(*) > 1) AS b
+     ON a.Stations_ID = b.Stations_ID
+     AND a.Parameter = b.Parameter
+     AND a.Parameterbeschreibung = b.Parameterbeschreibung
+     AND a.Einheit = b.Einheit
+     AND a.Datenquelle = b.Datenquelle
+     AND a."Zusatz-Info" = b."Zusatz-Info"
+     AND a.Besonderheiten = b.Besonderheiten
+     AND a.Literaturhinweis = b.Literaturhinweis
+ORDER BY Stations_ID, Von_Datum ASC, Bis_Datum DESC
+
+Delete simple duplicates:
+DELETE FROM Metadaten_Parameter
+    WHERE ID NOT IN
+        (SELECT ID
+           FROM Metadaten_Parameter
+           GROUP BY Stations_ID, Von_Datum, Bis_Datum, Parameter, Parameterbeschreibung, Einheit, Datenquelle, "Zusatz-Info", Besonderheiten, Literaturhinweis)
+
+#######################################
+########## Metadaten_Geraete ##########
+#######################################
+
+Select all which occour more than 1 time:
+SELECT *, Count(*)
+FROM Metadaten_Geraete
+GROUP BY Stations_ID, Von_Datum, Bis_Datum, Geraetetyp_Name, Messverfahren
+HAVING Count(*) > 1
+
+Select all Station_IDs with same parameter and different time:
+SELECT *
+FROM Metadaten_Geraete
+GROUP BY Stations_ID, Geraetetyp_Name, Messverfahren
+HAVING Count(*) > 1
+
+See the time differences(because we select the Station_IDs, the received data can have different parameters, but at least 2 rows should match):
+SELECT a.*
+FROM Metadaten_Geraete AS a
+INNER JOIN (SELECT *
+	FROM Metadaten_Geraete
+	GROUP BY Stations_ID, Geraetetyp_Name, Messverfahren
+	HAVING Count(*) > 1) AS b
+     ON a.Stations_ID = b.Stations_ID
+     AND a.Geraetetyp_Name = b.Geraetetyp_Name
+     AND a.Messverfahren = b.Messverfahren
+ORDER BY Stations_ID, Von_Datum ASC, Bis_Datum DESC
+
+Delete simple duplicates:
+DELETE FROM Metadaten_Geraete
+    WHERE ID NOT IN
+        (SELECT ID
+           FROM Metadaten_Geraete
+           GROUP BY Stations_ID, Von_Datum, Bis_Datum, Geraetetyp_Name, Messverfahren)
+
+#######################################
+######## Metadaten_Geographie #########
+#######################################
+
+Select all which occour more than 1 time:
+SELECT *, Count(*)
+FROM Metadaten_Geographie
+GROUP BY Stations_ID, Von_Datum, Bis_Datum, Stationshoehe, Geberhoehe, "Geogr.Breite", "Geogr.Laenge"
+HAVING Count(*) > 1
+
+Select all Station_IDs with same parameter and different time:
+SELECT *
+FROM Metadaten_Geographie
+GROUP BY Stations_ID, Stationshoehe, Geberhoehe, "Geogr.Breite", "Geogr.Laenge"
+HAVING Count(*) > 1
+
+See the time differences(because we select the Station_IDs, the received data can have different parameters, but at least 2 rows should match):
+SELECT a.*
+FROM Metadaten_Geographie AS a
+INNER JOIN (SELECT *
+	FROM Metadaten_Geographie
+	GROUP BY Stations_ID, Stationshoehe, Geberhoehe, "Geogr.Breite", "Geogr.Laenge"
+	HAVING Count(*) > 1) AS b
+     ON a.Stations_ID = b.Stations_ID
+     AND a.Stationshoehe = b.Stationshoehe
+     AND a.Geberhoehe = b.Geberhoehe
+     AND a."Geogr.Breite" = b."Geogr.Breite"
+     AND a."Geogr.Laenge" = b."Geogr.Laenge"
+ORDER BY Stations_ID, Von_Datum ASC, Bis_Datum DESC
+
+Delete simple duplicates:
+DELETE FROM Metadaten_Geographie
+    WHERE ID NOT IN
+        (SELECT ID
+           FROM Metadaten_Geographie
+           GROUP BY Stations_ID, Von_Datum, Bis_Datum, Stationshoehe, Geberhoehe, "Geogr.Breite", "Geogr.Laenge")
+
+#######################################
+######### Metadaten_Fehlwerte #########
+#######################################
+
+Select all which occour more than 1 time:
+SELECT *, Count(*)
+FROM Metadaten_Fehlwerte
+GROUP BY Stations_ID, Von_Datum, Bis_Datum, Parameter, Gesamt_Fehlwerte, Beschreibung
+HAVING Count(*) > 1
+
+Delete simple duplicates:
+DELETE FROM Metadaten_Fehlwerte
+    WHERE ID NOT IN
+        (SELECT ID
+           FROM Metadaten_Fehlwerte
+           GROUP BY Stations_ID, Von_Datum, Bis_Datum, Parameter, Gesamt_Fehlwerte, Beschreibung)
+
+#######################################
+########### air_temperature ###########
+#######################################
+
+Select all which occour more than 1 time:
+SELECT *, Count(*)
+FROM air_temperature
+GROUP BY STATIONS_ID, MESS_DATUM, QN_9, TT_TU, RF_TU
+HAVING Count(*) > 1
+
+Delete simple duplicates:
+DELETE FROM air_temperature
+    WHERE ID NOT IN
+        (SELECT ID
+           FROM air_temperature
+           GROUP BY STATIONS_ID, MESS_DATUM, QN_9, TT_TU, RF_TU)
+
+#######################################
+    #  air_temperature
+#######################################
+
+Delete simple duplicates:
+DELETE FROM air_temperature
+WHERE ID NOT IN
+    (SELECT ID
+     FROM air_temperature
+     GROUP BY Stations_ID, MESS_DATUM, QN_9, TT_TU, RF_TU)
+
+#######################################
+    #  cloud_type
+#######################################
+
+Delete simple duplicates:
+DELETE FROM cloud_type
+WHERE ID NOT IN
+    (SELECT ID
+     FROM cloud_type
+     GROUP BY Stations_ID, MESS_DATUM, QN_8, V_N, V_N_I, V_S1_CS, V_S1_CSA, V_S1_HHS, V_S1_NS, V_S2_CS, V_S2_CSA, V_S2_HHS, V_S2_NS, V_S3_CS, V_S3_CSA, V_S3_HHS, V_S3_NS, V_S4_CS, V_S4_CSA, V_S4_HHS, V_S4_NS)
+	 
+#######################################
+    #  cloudiness
+#######################################
+
+Delete simple duplicates:
+DELETE FROM cloudiness
+WHERE ID NOT IN
+    (SELECT ID
+     FROM cloudiness
+     GROUP BY Stations_ID, MESS_DATUM, QN_8, V_N_I, V_N)
+
+#######################################
+    #  dew_point
+#######################################
+
+Delete simple duplicates:
+DELETE FROM dew_point
+WHERE ID NOT IN
+    (SELECT ID
+     FROM dew_point
+     GROUP BY Stations_ID, MESS_DATUM, QN_8, TT, TD)
+
+#######################################
+    #  extreme_wind
+#######################################
+
+Delete simple duplicates:
+DELETE FROM extreme_wind
+WHERE ID NOT IN
+    (SELECT ID
+     FROM extreme_wind
+     GROUP BY Stations_ID, MESS_DATUM, QN_8, FX_911)
+
+#######################################
+    #  moisture
+#######################################
+
+Delete simple duplicates:
+DELETE FROM moisture
+WHERE ID NOT IN
+    (SELECT ID
+     FROM moisture
+     GROUP BY Stations_ID, MESS_DATUM, QN_8, ABSF_STD, VP_STD, TF_STD, P_STD, TT_STD, RF_STD, TD_STD)
+
+#######################################
+    #  precipitation
+#######################################
+
+Delete simple duplicates:
+DELETE FROM precipitation
+WHERE ID NOT IN
+    (SELECT ID
+     FROM precipitation
+     GROUP BY Stations_ID, MESS_DATUM, QN_8, R1, RS_IND, WRTR)
+
+#######################################
+    #  pressure
+#######################################
+
+Delete simple duplicates:
+DELETE FROM pressure
+WHERE ID NOT IN
+    (SELECT ID
+     FROM pressure
+     GROUP BY Stations_ID, MESS_DATUM, QN_8, P, P0)
+
+#######################################
+    #  soil_temperature
+#######################################
+
+Delete simple duplicates:
+DELETE FROM soil_temperature
+WHERE ID NOT IN
+    (SELECT ID
+     FROM soil_temperature
+     GROUP BY Stations_ID, MESS_DATUM, QN_2, V_TE002, V_TE005, V_TE010, V_TE020, V_TE050, V_TE100)
+
+#######################################
+    #  solar
+#######################################
+
+Delete simple duplicates:
+DELETE FROM solar
+WHERE ID NOT IN
+    (SELECT ID
+     FROM solar
+     GROUP BY Stations_ID, MESS_DATUM, QN_592, ATMO_LBERG, FD_LBERG, FG_LBERG, SD_LBERG, ZENIT, MESS_DATUM_WOZ)
+
+#######################################
+    #  sun
+#######################################
+
+Delete simple duplicates:
+DELETE FROM sun
+WHERE ID NOT IN
+    (SELECT ID
+     FROM sun
+     GROUP BY Stations_ID, MESS_DATUM, QN_7, SD_SO)
+
+#######################################
+    #  visibility
+#######################################
+
+Delete simple duplicates:
+DELETE FROM visibility
+WHERE ID NOT IN
+    (SELECT ID
+     FROM visibility
+     GROUP BY Stations_ID, MESS_DATUM, QN_8, V_VV_I, V_VV)
+
+#######################################
+    #  weather_phenomena
+#######################################
+
+Delete simple duplicates:
+DELETE FROM weather_phenomena
+WHERE ID NOT IN
+    (SELECT ID
+     FROM weather_phenomena
+     GROUP BY Stations_ID, MESS_DATUM, QN_8, WW, WW_Text)
+
+#######################################
+    #  wind
+#######################################
+
+Delete simple duplicates:
+DELETE FROM wind
+WHERE ID NOT IN
+    (SELECT ID
+     FROM wind
+     GROUP BY Stations_ID, MESS_DATUM, QN_3, F, D)
+
+#######################################
+    #  wind_synop
+#######################################
+
+Delete simple duplicates:
+DELETE FROM wind_synop
+WHERE ID NOT IN
+    (SELECT ID
+     FROM wind_synop
+     GROUP BY Stations_ID, MESS_DATUM, QN_8, FF, DD)
