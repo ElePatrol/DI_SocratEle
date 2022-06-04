@@ -1,0 +1,84 @@
+SELECT ID,
+       Stations_ID,
+       MESS_DATUM,
+       QN_9,
+       TT_TU,
+       RF_TU,
+       strftime('%Y %m %d %H %M %S',MESS_DATUM) <=== Funktion um datetime umzuformen
+  FROM air_temperature
+  WHERE ID < 200
+
+
+1. Join ohne genauen tag, aber mit position
+2. Speichere Stations-ID und genaues datum in neuer tabelle (jede spalte wird vervierfacht)
+3. Nächste joins gehen über Stations-ID + genaues datum
+
+
+
+
+SELECT b.ID
+FROM unfall_data AS a
+RIGHT JOIN air_temperature AS b
+ ON a.UJAHR = strftime('%Y', b.MESS_DATUM)
+ AND a.UMONAT = strftime('%m', b.MESS_DATUM)
+ AND a.USTUNDE = strftime('%H', b.MESS_DATUM)
+
+
+
+SELECT b.*
+FROM unfall_data AS a
+RIGHT JOIN air_temperature AS b
+ ON a.UJAHR = strftime('%Y', b.MESS_DATUM)
+ AND a.UMONAT = strftime('%m', b.MESS_DATUM)
+ AND a.USTUNDE = strftime('%H', b.MESS_DATUM)
+
+
+
+
+
+1. Lade alle möglichen einträge von air_temperature
+2. Selectiere für diese dann den dazugehörigen Standort
+
+SELECT a.*, b."Geogr.Breite", b."Geogr.Laenge"
+  FROM (SELECT b.Stations_ID, b.MESS_DATUM, b.TT_TU, b.RF_TU
+   FROM unfall_data AS a
+   RIGHT JOIN air_temperature AS b
+    ON a.UJAHR = strftime('%Y', b.MESS_DATUM)
+    AND a.UMONAT = strftime('%m', b.MESS_DATUM)
+    AND a.USTUNDE = strftime('%H', b.MESS_DATUM)) AS a
+  INNER JOIN Metadaten_Geographie AS b
+  ON a.Stations_ID = b.Stations_ID
+  AND b.Von_Datum < a.MESS_DATUM
+  AND (CASE WHEN b.Bis_Datum NOT NULL THEN (b.Bis_Datum > a.MESS_DATUM)
+  ELSE TRUE END)
+    ORDER BY a.Stations_ID,
+    b.Von_Datum ASC,
+    b.Bis_Datum DESC
+
+SELECT a.*, b."Geogr.Breite", b."Geogr.Laenge"
+  FROM (SELECT b.Stations_ID, b.MESS_DATUM, b.TT_TU, b.RF_TU
+   FROM unfall_data AS a
+   JOIN air_temperature AS b
+    ON a.UJAHR = strftime('%Y', b.MESS_DATUM)
+    AND a.UMONAT = strftime('%m', b.MESS_DATUM)
+    AND a.USTUNDE = strftime('%H', b.MESS_DATUM)) AS a
+  INNER JOIN Metadaten_Geographie AS b
+  ON a.Stations_ID = b.Stations_ID
+  AND b.Von_Datum < a.MESS_DATUM
+  AND (CASE WHEN b.Bis_Datum NOT NULL THEN (b.Bis_Datum > a.MESS_DATUM)
+  ELSE TRUE END)
+GROUP BY a.Stations_ID, a.MESS_DATUM
+
+Ansatz ändern:
+Erst unfall_data mit Metadaten_Geographie mappen (eindeutig eine stationsid zuweisen)
+Dann über zeit und stationsid mit gemessenen daten verbinden
+
+
+1. erstelle tabelle, wo alle spalten von unfall_data mit geographie gemappt sind
+2. zusätzlich noch eine entfernungs spalte
+3. sortiere nach ID von unfall data und
+
+SELECT *
+FROM unfall_data AS a
+JOIN Metadaten_Geographie AS b
+ON a.XGCSWGS84 

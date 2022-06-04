@@ -68,30 +68,55 @@ def writeAllDataInDatabase(db_name):
                    "Metadaten_Fehlwerte_processed_combined.csv", cur)
 
     #
-    #  Metadaten_Geographie
+    #  Metadaten_Geographie_2
     #
 
     # 1: Integer, 2: Float, 3: Text, 4: Date
-    header_geographie = {
+    header_geographie_2 = {
         "Stations_ID": 1,
         "Von_Datum": 4,
         "Bis_Datum": 4,
         "Stationshoehe": 2,
-        "Geberhoehe": 2,
         "Geogr.Breite": 2,
         "Geogr.Laenge": 2
     }
-    index_geographie = {
+    index_geographie_2 = {
         0: 0,
         1: 3,
-        2: 5,
-        3: 6,
+        2: 4,
+        3: 5,
         4: 1,
         5: 2,
         6: 99
     }
-    dataToDatabase("Metadaten_Geographie", header_geographie, index_geographie,
+    dataToDatabase("Metadaten_Geographie_2", header_geographie_2, index_geographie_2,
                    "Metadaten_Geographie_processed_combined.csv", cur)
+
+    #
+    #  Metadaten_Geraete_Geberhoehe (Temporäre database)
+    #
+
+    # 1: Integer, 2: Float, 3: Text, 4: Date
+    header_geraete_geberhoehe = {
+        "Stations_ID": 1,
+        "Von_Datum": 4,
+        "Bis_Datum": 4,
+        "Geberhoehe": 2
+    }
+    index_geraete_geberhoehe = {
+        0: 0,
+        1: 99,
+        2: 99,
+        3: 99,
+        4: 99,
+        5: 3,
+        6: 1,
+        7: 2,
+        8: 99,
+        9: 99,
+    }
+    dataToDatabase("Metadaten_Geraete_Geberhoehe", header_geraete_geberhoehe, index_geraete_geberhoehe,
+                   "Metadaten_Geraete_processed_combined.csv", cur)
 
     #
     #  Metadaten_Geraete
@@ -568,6 +593,11 @@ def writeAllDataInDatabase(db_name):
 
 def dataToDatabase(db_name, header, index, file, db_cur):
     print("Start processing:", db_name)
+    utmConverter = Proj(proj='utm', zone=32, ellps='WGS84', units='m',
+                        preserve_units=False)
+    lon = 0
+    lon_indx = 0
+    lat = 0
     create_table = "CREATE TABLE IF NOT EXISTS " + \
         db_name + " (ID INTEGER PRIMARY KEY AUTOINCREMENT, "
 
@@ -585,11 +615,13 @@ def dataToDatabase(db_name, header, index, file, db_cur):
         if(column_type == 1):  # int
             create_table += "INTEGER"
         elif(column_type == 2):  # float
-            create_table += "INTEGER"
+            create_table += "REAL"
         elif(column_type == 3):  # string
             create_table += "TEXT"
         elif(column_type == 4):  # date
-            create_table += "DATE"
+            create_table += "DATETIME"
+        elif(column_type == 5):  # coordinate
+            create_table += "REAL"
 
     create_table += ");"
 
@@ -646,9 +678,13 @@ def dataToDatabase(db_name, header, index, file, db_cur):
                                 column_type = list(header.values())[index[i]]
                                 converted_data = 0
 
-                                if(column_type != 4):  # 1: int, 2: float, 3: text
+                                if(column_type == 1):  # 1: int
                                     converted_data = data
-                                else:  # 4: date
+                                elif(column_type == 2):  # 2: float
+                                    converted_data = data
+                                elif(column_type == 3):  # 3: text
+                                    converted_data = data
+                                elif(column_type == 4):  # 4: date
                                     if "." in data:  # "17.07.2021-01:00"
                                         if((len(data) > 10) and (data[10] == "-")):
                                             converted_data = data[6:10] + "-" + \
@@ -675,6 +711,8 @@ def dataToDatabase(db_name, header, index, file, db_cur):
                                             converted_data = data[0:4] + \
                                                 "-" + data[4:6] + "-" + \
                                                 data[6:8] + "T00:00"
+                                elif(column_type == 5):  # 5: coordinate
+                                    converted_data = data.replace(",", ".")
 
                                 next_column[index[i]] = converted_data
 
@@ -700,15 +738,15 @@ def removeDuplicatesInDatabase(db_name):
     cur.execute(remove_fehlwerte_duplicates)
 
     #
-    #  Metadaten_Geographie
+    #  Metadaten_Geographie_2
     #
-    remove_geographie_duplicates = \
-        "DELETE FROM Metadaten_Geographie " + \
+    remove_geographie_2_duplicates = \
+        "DELETE FROM Metadaten_Geographie_2 " + \
         "WHERE ID NOT IN " + \
         "    (SELECT ID " + \
         "     FROM Metadaten_Geographie " + \
-        "     GROUP BY Stations_ID, Von_Datum, Bis_Datum, Stationshoehe, Geberhoehe, \"Geogr.Breite\", \"Geogr.Laenge\")"
-    cur.execute(remove_geographie_duplicates)
+        "     GROUP BY Stations_ID, Von_Datum, Bis_Datum, Stationshoehe, \"Geogr.Breite\", \"Geogr.Laenge\")"
+    cur.execute(remove_geographie_2_duplicates)
 
     #
     #  Metadaten_Geraete
@@ -720,6 +758,17 @@ def removeDuplicatesInDatabase(db_name):
         "     FROM Metadaten_Geraete " + \
         "     GROUP BY Stations_ID, Von_Datum, Bis_Datum, Geraetetyp_Name, Messverfahren)"
     cur.execute(remove_geraete_duplicates)
+
+    #
+    #  Metadaten_Geraete_Geberhoehe
+    #
+    remove_geraete_geberhoehe_duplicates = \
+        "DELETE FROM Metadaten_Geraete_Geberhoehe " + \
+        "WHERE ID NOT IN " + \
+        "    (SELECT ID " + \
+        "     FROM Metadaten_Geraete_Geberhoehe " + \
+        "     GROUP BY Stations_ID, Von_Datum, Bis_Datum, Geberhoehe)"
+    cur.execute(remove_geraete_geberhoehe_duplicates)
 
     #
     #  Metadaten_Parameter
@@ -915,7 +964,547 @@ def removeDuplicatesInDatabase(db_name):
     con.close()
 
 
+def combineDuplicatesInDatabase(db_name):
+    # open and (if not exists) create database file
+    con = sqlite3.connect(db_name)
+    cur = con.cursor()
+
+    #
+    #  Metadaten_Geographie
+    #
+
+    header_geographie_2 = [
+        "Stationshoehe",
+        "Geogr.Breite",
+        "Geogr.Laenge"
+    ]
+    combineDuplicates("Metadaten_Geographie_2", header_geographie_2, cur)
+
+    #
+    #  Metadaten_Geraete
+    #
+
+    header_geraete = [
+        "Geraetetyp_Name",
+        "Messverfahren"
+    ]
+    combineDuplicates("Metadaten_Geraete", header_geraete, cur)
+
+    #
+    #  Metadaten_Geraete_Geberhoehe
+    #
+
+    header_geraete_geberhoehe = [
+        "Geberhoehe)"
+    ]
+    combineDuplicates("Metadaten_Geraete_Geberhoehe",
+                      header_geraete_geberhoehe, cur)
+
+    #
+    #  Metadaten_Parameter
+    #
+
+    header_parameter = [
+        "Parameter",
+        "Parameterbeschreibung",
+        "Einheit",
+        "Datenquelle",
+        "Zusatz-Info",
+        "Besonderheiten",
+        "Literaturhinweis",
+    ]
+    combineDuplicates("Metadaten_Parameter", header_parameter, cur)
+
+    #
+    #  Metadaten_Stationsname
+    #
+
+    header_stationname = [
+        "Stationsname"
+    ]
+    combineDuplicates("Metadaten_Stationsname", header_stationname, cur)
+
+    # Save (commit) the changes
+    con.commit()
+
+    # close the database connection
+    con.close()
+
+
+def combineDuplicates(db_name, header, db_cur):
+    print("Start processing:", db_name)
+    duplicates = []
+
+    # get duplicates requst
+    select_duplicates = "SELECT a.* " + \
+        "FROM " + db_name + " AS a " + \
+        "INNER JOIN (SELECT * " + \
+        "FROM " + db_name + " " + \
+        "GROUP BY Stations_ID"
+
+    # add all columns (except the dates)
+    for column_name in header:
+        select_duplicates += ", \"" + column_name + "\" "
+
+    select_duplicates += "HAVING Count(*) > 1) AS b " + \
+        "ON a.Stations_ID = b.Stations_ID "
+
+    for column_name in header:
+        select_duplicates += "AND a.\"" + column_name + \
+            "\" = b." + "\"" + column_name + "\" "
+
+    select_duplicates += "ORDER BY Stations_ID, Von_Datum ASC, Bis_Datum DESC"
+
+    print(select_duplicates)
+
+    duplicates = db_cur.execute(select_duplicates)
+
+    insert_table = "INSERT INTO " + db_name + " " + \
+        "(Stations_ID, Von_Datum, Bis_Datum"
+
+    for column_name in header:
+        insert_table += ", \"" + column_name + "\""
+
+    insert_table += ") values (?, ?, ?"
+
+    for column_name in header:
+        insert_table += ", ?"
+
+    insert_table += ")"
+
+    delete_row = "DELETE FROM " + db_name + " WHERE ID=?"
+
+    new_row = []
+    current_id = ""
+    von_datum = ""
+    bis_datum = ""
+    data = []
+    first = True
+    for row in duplicates:
+        # check if the id is the same
+        if current_id == str(row[1]):
+            # check if the data is the same
+            same = True
+            for index, var in enumerate(data):
+                print(var, row[index + 4])
+                if var != row[index + 4]:
+                    same = False
+                    break
+
+            if same:
+                if bis_datum != "Null":
+                    bis_datum = row[3]
+            else:
+                # save the new_row data
+                new_row.append(current_id)
+                new_row.append(von_datum)
+                new_row.append(bis_datum)
+                new_row.extend(data)
+                db_cur.execute(insert_table, new_row)
+
+                von_datum = row[2]
+                bis_datum = row[3]
+                data = row[4:]
+        else:
+            if not first:
+                # save the new_row data, but only when its not first
+                new_row.append(current_id)
+                new_row.append(von_datum)
+                new_row.append(bis_datum)
+                new_row.extend(data)
+                db_cur.execute(insert_table, new_row)
+            else:
+                first = False
+
+            current_id = str(row[1])
+            von_datum = row[2]
+            bis_datum = row[3]
+            data = row[4:]
+
+        db_cur.execute(delete_row, (str(row[0]),))
+
+    # save the last one, because it will not recognize any change, when the found data ends
+    new_row.append(current_id)
+    new_row.append(von_datum)
+    new_row.append(bis_datum)
+    new_row.extend(data)
+    db_cur.execute(insert_table, new_row)
+
+
+def createMetadaten_Geographie(db_name):
+    # open and (if not exists) create database file
+    con = sqlite3.connect(db_name)
+    cur = con.cursor()
+
+    #
+    #  Metadaten_Geographie_2
+    #
+
+    cur.execute("CREATE TABLE Metadaten_Geographie ( " +
+                "ID             INTEGER  PRIMARY KEY AUTOINCREMENT, " +
+                "Stations_ID    INTEGER, " +
+                "Von_Datum      DATETIME, " +
+                "Bis_Datum      DATETIME, " +
+                "Stationshoehe  REAL, " +
+                "Geberhoehe     REAL, " +
+                "[Geogr.Breite] REAL, " +
+                "[Geogr.Laenge] REAL " +
+                ");")
+
+    cur.execute("INSERT INTO Metadaten_Geographie SELECT ID, " +
+                "Stations_ID, " +
+                "Von_Datum, " +
+                "Bis_Datum, " +
+                "Stationshoehe, " +
+                "Geberhoehe, " +
+                "\"Geogr.Breite\", " +
+                "\"Geogr.Laenge\" " +
+                "FROM ( " +
+                "SELECT a.*, " +
+                "b.*, " +
+                "(b.Bis_Datum - b.Von_Datum) AS test " +
+                "FROM Metadaten_Geographie_2 AS a " +
+                "INNER JOIN " +
+                "Metadaten_Geraete_Geberhoehe AS b ON a.Stations_ID = b.Stations_ID AND  " +
+                "(CASE WHEN b.Bis_Datum NOT NULL THEN (CASE WHEN a.Bis_Datum NOT NULL THEN ( (a.von_datum BETWEEN b.von_datum AND b.bis_datum) OR " +
+                "(a.bis_datum BETWEEN b.von_datum AND b.bis_datum) OR " +
+                "(a.von_datum < a.von_datum AND " +
+                "a.bis_datum > b.bis_datum) OR " +
+                "(a.von_datum > a.von_datum AND " +
+                "a.bis_datum < b.bis_datum) ) ELSE b.bis_datum > a.von_datum END) ELSE (CASE WHEN a.Bis_Datum NOT NULL THEN a.bis_datum > b.von_datum ELSE TRUE END) END) " +
+                "ORDER BY a.Stations_ID, " +
+                "b.Von_Datum ASC, " +
+                "b.Bis_Datum DESC " +
+                ") " +
+                "GROUP BY ID;")
+
+    cur.execute("DROP TABLE IF EXISTS Metadaten_Geographie_2;")
+    cur.execute("DROP TABLE IF EXISTS Metadaten_Geraete_Geberhoehe;")
+
+    # Save (commit) the changes
+    con.commit()
+
+    # close the database connection
+    con.close()
+
+
+def writeUnfalldatenInDatabase(db_name):
+    # open and (if not exists) create database file
+    con = sqlite3.connect(db_name)
+    cur = con.cursor()
+
+    #
+    #  unfall_data_2016
+    #
+
+    # 1: Integer, 2: Float, 3: Text, 4: Date, 5: Coordinate
+    header_unfall_data_2016 = {
+        "UGEMEINDE": 1,
+        "UJAHR": 1,
+        "UMONAT": 1,
+        "USTUNDE": 1,
+        "UWOCHENTAG": 1,
+        "UKATEGORIE": 1,
+        "UART": 1,
+        "UTYP1": 1,
+        "ULICHTVERH": 1,
+        "IstRad": 1,
+        "IstPKW": 1,
+        "IstFuss": 1,
+        "IstKrad": 1,
+        "IstGkfz": 1,
+        "IstSonstige": 1,
+        "LINREFX": 5,
+        "LINREFY": 5,
+        "XGCSWGS84": 5,
+        "YGCSWGS84": 5,
+        "STRZUSTAND": 1
+    }
+    index_unfall_data_2016 = {
+        0: 99,
+        1: 99,
+        2: 99,
+        3: 99,
+        4: 99,
+        5: 0,
+        6: 1,
+        7: 2,
+        8: 3,
+        9: 4,
+        10: 5,
+        11: 6,
+        12: 7,
+        13: 8,
+        14: 19,
+        15: 9,
+        16: 10,
+        17: 11,
+        18: 12,
+        19: 13,
+        20: 14,
+        21: 15,
+        22: 16,
+        23: 17,
+        24: 18
+    }
+    dataToDatabase("unfall_data", header_unfall_data_2016, index_unfall_data_2016,
+                   "Unfallorte_2016_LinRef.csv", cur)
+
+    #
+    #  unfall_data_2017
+    #
+
+    # 1: Integer, 2: Float, 3: Text, 4: Date, 5: Coordinate
+    header_unfall_data_2017 = {
+        "UGEMEINDE": 1,
+        "UJAHR": 1,
+        "UMONAT": 1,
+        "USTUNDE": 1,
+        "UWOCHENTAG": 1,
+        "UKATEGORIE": 1,
+        "UART": 1,
+        "UTYP1": 1,
+        "ULICHTVERH": 1,
+        "IstRad": 1,
+        "IstPKW": 1,
+        "IstFuss": 1,
+        "IstKrad": 1,
+        "IstGkfz": 1,
+        "IstSonstige": 1,
+        "LINREFX": 5,
+        "LINREFY": 5,
+        "XGCSWGS84": 5,
+        "YGCSWGS84": 5,
+        "STRZUSTAND": 1
+    }
+    index_unfall_data_2017 = {
+        0: 99,
+        1: 99,
+        2: 99,
+        3: 99,
+        4: 99,
+        5: 0,
+        6: 1,
+        7: 2,
+        8: 3,
+        9: 4,
+        10: 5,
+        11: 6,
+        12: 7,
+        13: 9,
+        14: 10,
+        15: 11,
+        16: 12,
+        17: 14,
+        18: 8,
+        19: 19,
+        20: 15,
+        21: 16,
+        22: 17,
+        23: 18
+    }
+    dataToDatabase("unfall_data", header_unfall_data_2017, index_unfall_data_2017,
+                   "Unfallorte2017_LinRef.csv", cur)
+
+    #
+    #  unfall_data_2018
+    #
+
+    # 1: Integer, 2: Float, 3: Text, 4: Date, 5: Coordinate
+    header_unfall_data_2018 = {
+        "UGEMEINDE": 1,
+        "UJAHR": 1,
+        "UMONAT": 1,
+        "USTUNDE": 1,
+        "UWOCHENTAG": 1,
+        "UKATEGORIE": 1,
+        "UART": 1,
+        "UTYP1": 1,
+        "ULICHTVERH": 1,
+        "IstRad": 1,
+        "IstPKW": 1,
+        "IstFuss": 1,
+        "IstKrad": 1,
+        "IstGkfz": 1,
+        "IstSonstige": 1,
+        "LINREFX": 5,
+        "LINREFY": 5,
+        "XGCSWGS84": 5,
+        "YGCSWGS84": 5,
+        "STRZUSTAND": 1
+    }
+    index_unfall_data_2018 = {
+        0: 99,
+        1: 99,
+        2: 99,
+        3: 99,
+        4: 0,
+        5: 1,
+        6: 2,
+        7: 3,
+        8: 4,
+        9: 5,
+        10: 6,
+        11: 7,
+        12: 8,
+        13: 9,
+        14: 10,
+        15: 11,
+        16: 12,
+        17: 13,
+        18: 14,
+        19: 19,
+        20: 15,
+        21: 16,
+        22: 17,
+        23: 18
+    }
+    dataToDatabase("unfall_data", header_unfall_data_2018, index_unfall_data_2018,
+                   "Unfallorte2018_LinRef.csv", cur)
+
+    #
+    #  unfall_data_2019
+    #
+
+    # 1: Integer, 2: Float, 3: Text, 4: Date, 5: Coordinate
+    header_unfall_data_2019 = {
+        "UGEMEINDE": 1,
+        "UJAHR": 1,
+        "UMONAT": 1,
+        "USTUNDE": 1,
+        "UWOCHENTAG": 1,
+        "UKATEGORIE": 1,
+        "UART": 1,
+        "UTYP1": 1,
+        "ULICHTVERH": 1,
+        "IstRad": 1,
+        "IstPKW": 1,
+        "IstFuss": 1,
+        "IstKrad": 1,
+        "IstGkfz": 1,
+        "IstSonstige": 1,
+        "LINREFX": 5,
+        "LINREFY": 5,
+        "XGCSWGS84": 5,
+        "YGCSWGS84": 5,
+        "STRZUSTAND": 1
+    }
+    index_unfall_data_2019 = {
+        0: 99,
+        1: 99,
+        2: 99,
+        3: 99,
+        4: 0,
+        5: 1,
+        6: 2,
+        7: 3,
+        8: 4,
+        9: 5,
+        10: 6,
+        11: 7,
+        12: 8,
+        13: 9,
+        14: 10,
+        15: 11,
+        16: 12,
+        17: 13,
+        18: 14,
+        19: 15,
+        20: 16,
+        21: 17,
+        22: 18,
+        23: 19
+    }
+    dataToDatabase("unfall_data", header_unfall_data_2019, index_unfall_data_2019,
+                   "Unfallorte2019_LinRef.csv", cur)
+
+    #
+    #  unfall_data_2020
+    #
+
+    # 1: Integer, 2: Float, 3: Text, 4: Date, 5: Coordinate
+    header_unfall_data_2020 = {
+        "UGEMEINDE": 1,
+        "UJAHR": 1,
+        "UMONAT": 1,
+        "USTUNDE": 1,
+        "UWOCHENTAG": 1,
+        "UKATEGORIE": 1,
+        "UART": 1,
+        "UTYP1": 1,
+        "ULICHTVERH": 1,
+        "IstRad": 1,
+        "IstPKW": 1,
+        "IstFuss": 1,
+        "IstKrad": 1,
+        "IstGkfz": 1,
+        "IstSonstige": 1,
+        "LINREFX": 5,
+        "LINREFY": 5,
+        "XGCSWGS84": 5,
+        "YGCSWGS84": 5,
+        "STRZUSTAND": 1
+    }
+    index_unfall_data_2020 = {
+        0: 99,
+        1: 99,
+        2: 99,
+        3: 99,
+        4: 99,
+        5: 0,
+        6: 1,
+        7: 2,
+        8: 3,
+        9: 4,
+        10: 5,
+        11: 6,
+        12: 7,
+        13: 8,
+        14: 9,
+        15: 10,
+        16: 11,
+        17: 12,
+        18: 13,
+        19: 14,
+        20: 15,
+        21: 16,
+        22: 17,
+        23: 18,
+        24: 19
+    }
+    dataToDatabase("unfall_data", header_unfall_data_2020, index_unfall_data_2020,
+                   "Unfallorte2020_LinRef.csv", cur)
+
+    # Save (commit) the changes
+    con.commit()
+
+    # close the database connection
+    con.close()
+
+
 if __name__ == "__main__":
+    # example link
+    # 0                                            1
+    # 0            1  2     3        4        5
+    # stundenwerte_SD_00003_19510101_20110331_hist.zip
+
+    # Download all needed files
+    # downloadSource(
+    #    "https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/")
+
+    # merge the databases of the same type together (data and meta)
+    # mergeDatabasesAllFolder()
+
+    # select all data between 2016 and 2020 and remove multiple header (also combine databases with different names, but same content)
+    # processDatabasesAllFolder()
+
+    # combine all selected data from the metadaten-databases in big ones
+    # combineProcessedDatabases("Metadaten_Fehlwerte_processed")
+    # combineProcessedDatabases("Metadaten_Geographie_processed")
+    # combineProcessedDatabases("Metadaten_Geraete_processed")
+    # combineProcessedDatabases("Metadaten_Parameter_processed")
+    # combineProcessedDatabases("Metadaten_Stationsname_processed")
+
     # get smallest and biggest value for each file (don't use processed files, to get better values, ignore all parameter, taht are not integer if we expect one integr parameter)
     # getVarLength("Metadaten_Fehlwerte_processed_combined.csv", 7)
     # getVarLength("Metadaten_Geographie_processed_combined.csv", 7)
@@ -927,9 +1516,13 @@ if __name__ == "__main__":
     # writeAllDataInDatabase("weather_data.db")
 
     # remove double data (we have a lot of it)
-    removeDuplicatesInDatabase("weather_data.db")
+    # removeDuplicatesInDatabase("weather_data.db")
 
-    # put Geberhoehe ueber Grund [m] from Metadaten_Geraete in Metadaten_Geographie
-    # go through every line of the geographie database and check where the missing data in the
-    # Metadaten_Geraete_....csv is
-    # then update the geographe database
+    # combine same data with different start and end time
+    # combineDuplicatesInDatabase("weather_data.db")
+
+    # combine tables to create the Metadaten_Geographie table
+    # createMetadaten_Geographie()
+
+    # Add Unfalldaten
+    writeUnfalldatenInDatabase("weather_data.db")
