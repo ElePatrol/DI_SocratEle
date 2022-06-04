@@ -108,7 +108,17 @@ DELETE FROM Metadaten_Geraete
            GROUP BY Stations_ID, Von_Datum, Bis_Datum, Geraetetyp_Name, Messverfahren)
 
 #######################################
-######## Metadaten_Geographie #########
+##### Metadaten_Geraete_Geberhoehe ####
+#######################################
+
+DELETE FROM Metadaten_Geraete_Geberhoehe
+WHERE ID NOT IN
+    (SELECT ID
+     FROM Metadaten_Geraete_Geberhoehe
+     GROUP BY Stations_ID, Von_Datum, Bis_Datum, Geberhoehe)
+
+#######################################
+####### Metadaten_Geographie_2 ########
 #######################################
 
 Select all which occour more than 1 time:
@@ -342,3 +352,43 @@ WHERE ID NOT IN
     (SELECT ID
      FROM wind_synop
      GROUP BY Stations_ID, MESS_DATUM, QN_8, FF, DD)
+
+
+
+CREATE TABLE Metadaten_Geographie (
+    ID             INTEGER  PRIMARY KEY AUTOINCREMENT,
+    Stations_ID    INTEGER,
+    Von_Datum      DATETIME,
+    Bis_Datum      DATETIME,
+    Stationshoehe  REAL,
+    Geberhoehe     REAL,
+    [Geogr.Breite] REAL,
+    [Geogr.Laenge] REAL
+);
+
+INSERT INTO Metadaten_Geographie SELECT ID,
+                                          Stations_ID,
+                                          Von_Datum,
+                                          Bis_Datum,
+                                          Stationshoehe,
+                                          Geberhoehe,
+                                          "Geogr.Breite",
+                                          "Geogr.Laenge"
+                                     FROM (
+                                              SELECT a.*,
+                                                     b.*,
+                                                     (b.Bis_Datum - b.Von_Datum) AS test
+                                                FROM Metadaten_Geographie_2 AS a
+                                                     INNER JOIN
+                                                     Metadaten_Geraete_Geberhoehe AS b ON a.Stations_ID = b.Stations_ID AND 
+                                                                                          (CASE WHEN b.Bis_Datum NOT NULL THEN (CASE WHEN a.Bis_Datum NOT NULL THEN ( (a.von_datum BETWEEN b.von_datum AND b.bis_datum) OR 
+                                                                                                                                                                      (a.bis_datum BETWEEN b.von_datum AND b.bis_datum) OR 
+                                                                                                                                                                      (a.von_datum < a.von_datum AND 
+                                                                                                                                                                       a.bis_datum > b.bis_datum) OR 
+                                                                                                                                                                      (a.von_datum > a.von_datum AND 
+                                                                                                                                                                       a.bis_datum < b.bis_datum) ) ELSE b.bis_datum > a.von_datum END) ELSE (CASE WHEN a.Bis_Datum NOT NULL THEN a.bis_datum > b.von_datum ELSE TRUE END) END) 
+                                               ORDER BY a.Stations_ID,
+                                                        b.Von_Datum ASC,
+                                                        b.Bis_Datum DESC
+                                          )
+                                    GROUP BY ID;

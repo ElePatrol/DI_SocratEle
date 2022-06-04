@@ -134,10 +134,6 @@ CREATE TABLE Metadaten_Parameter (Stations_ID INT, Von_Datum DATE, Bis_Datum DAT
 CREATE TABLE Metadaten_Stationsname (Stations_ID INT, Von_Datum DATE, Bis_Datum DATE, Stationsname CHARACTER(70));
 
 
-5. Tabellen umstrukturieren, sodass Stations_ID der primary key ist, und daten wie geo-locations nicht mehrmals in unterschiedlichen tabellen vorkommen.
-
-
-
 
 
 
