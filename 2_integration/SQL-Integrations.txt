@@ -179,16 +179,62 @@ INSERT INTO unfall_Geographie_data SELECT *
 
 
 //TEMP SOLUTION!!!
-SELECT *
-FROM (SELECT a.*,
-                  b.Stations_ID,
-		  b.Von_Datum,
-		  b.Bis_Datum,
-                  SQRT(POWER( (b.[Geogr.Breite] - a.YGCSWGS84), 2) + POWER( (b.[Geogr.Laenge] - a.XGCSWGS84), 2) ) AS Distance
-             FROM unfall_data AS a
-                  CROSS JOIN Metadaten_Geographie AS b
-            ORDER BY a.ID,
-                     Distance)
-WHERE (CASE WHEN UJAHR > strftime('%Y', Von_Datum) THEN TRUE ELSE (CASE WHEN UJAHR = strftime('%Y', Von_Datum) THEN (CASE WHEN UMONAT > strftime('%m', Von_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) AND 
-                                                                                  (CASE WHEN Bis_Datum NOT NULL THEN (CASE WHEN UJAHR < strftime('%Y', Bis_Datum) THEN TRUE ELSE (CASE WHEN UJAHR = strftime('%Y', bis_Datum) THEN (CASE WHEN UMONAT < strftime('%m', Bis_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) ELSE TRUE END) 
-GROUP BY ID
+INSERT INTO unfall_Geographie_data SELECT ID,
+                                          UGEMEINDE,
+                                          UJAHR,
+                                          UMONAT,
+                                          USTUNDE,
+                                          UWOCHENTAG,
+                                          UKATEGORIE,
+                                          UART,
+                                          UTYP1,
+                                          ULICHTVERH,
+                                          IstRad,
+                                          IstPKW,
+                                          IstFuss,
+                                          IstKrad,
+                                          IstGkfz,
+                                          IstSonstige,
+                                          LINREFX,
+                                          LINREFY,
+                                          XGCSWGS84,
+                                          YGCSWGS84,
+                                          STRZUSTAND,
+                                          Stations_ID,
+                                          Distance
+                                     FROM (
+                                              SELECT a.*,
+                                                     b.Stations_ID,
+                                                     b.Von_Datum,
+                                                     b.Bis_Datum,
+                                                     SQRT(POWER( (b.[Geogr.Breite] - a.YGCSWGS84), 2) + POWER( (b.[Geogr.Laenge] - a.XGCSWGS84), 2) ) AS Distance
+                                                FROM (
+                                                         SELECT *
+                                                           FROM unfall_data
+                                                          WHERE ID < 1000
+                                                     )
+                                                     AS a
+                                                     CROSS JOIN
+                                                     Metadaten_Geographie AS b
+                                               ORDER BY a.ID,
+                                                        Distance
+                                          )
+                                    WHERE (CASE WHEN UJAHR > strftime('%Y', Von_Datum) THEN TRUE ELSE (CASE WHEN UJAHR = strftime('%Y', Von_Datum) THEN (CASE WHEN UMONAT > strftime('%m', Von_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) AND 
+                                          (CASE WHEN Bis_Datum NOT NULL THEN (CASE WHEN UJAHR < strftime('%Y', Bis_Datum) THEN TRUE ELSE (CASE WHEN UJAHR = strftime('%Y', bis_Datum) THEN (CASE WHEN UMONAT < strftime('%m', Bis_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) ELSE TRUE END) 
+                                    GROUP BY ID;
+
+
+
+INSERT INTO unfall_Geographie_data SELECT *
+                                     FROM (
+                                              SELECT a.*,
+                                                     b.Stations_ID,
+                                                     SQRT(POWER( (b.[Geogr.Breite] - a.YGCSWGS84), 2) + POWER( (b.[Geogr.Laenge] - a.XGCSWGS84), 2) ) AS Distance
+                                                FROM (SELECT * FROM unfall_data WHERE ID < 1000) AS a
+                                                     LEFT JOIN
+                                                     Metadaten_Geographie AS b ON (CASE WHEN a.UJAHR > strftime('%Y', b.Von_Datum) THEN TRUE ELSE (CASE WHEN a.UJAHR = strftime('%Y', b.Von_Datum) THEN (CASE WHEN a.UMONAT > strftime('%m', b.Von_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) AND 
+                                                                                  (CASE WHEN b.Bis_Datum NOT NULL THEN (CASE WHEN a.UJAHR < strftime('%Y', b.Bis_Datum) THEN TRUE ELSE (CASE WHEN a.UJAHR = strftime('%Y', b.bis_Datum) THEN (CASE WHEN a.UMONAT < strftime('%m', b.Bis_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) ELSE TRUE END) 
+                                               ORDER BY a.ID,
+                                                        Distance
+                                          )
+                                    GROUP BY ID;

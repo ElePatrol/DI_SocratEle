@@ -1511,11 +1511,10 @@ def fixDateOfUnfalldaten(db_name):
                 "XGCSWGS84   REAL," +
                 "YGCSWGS84   REAL," +
                 "STRZUSTAND  INTEGER," +
-                "Stations_ID INTEGER," +
-                "Distance    REAL" +
+                "Stations_ID INTEGER" +
                 ");")
 
-    insert_table = "INSERT INTO unfall_Geographie_data_2 ( ID, UGEMEINDE, UJAHR, UMONAT, USTUNDE, UTAG, UKATEGORIE, UART, UTYP1, ULICHTVERH, IstRad, IstPKW, IstFuss, IstKrad, IstGkfz, IstSonstige, LINREFX, LINREFY, XGCSWGS84, YGCSWGS84, STRZUSTAND, Stations_ID, Distance ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )"
+    insert_table = "INSERT INTO unfall_Geographie_data_2 ( ID, UGEMEINDE, UJAHR, UMONAT, USTUNDE, UTAG, UKATEGORIE, UART, UTYP1, ULICHTVERH, IstRad, IstPKW, IstFuss, IstKrad, IstGkfz, IstSonstige, LINREFX, LINREFY, XGCSWGS84, YGCSWGS84, STRZUSTAND, Stations_ID ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )"
 
     # load unfall data
     cur.execute("SELECT * FROM Metadaten_Parameter")
