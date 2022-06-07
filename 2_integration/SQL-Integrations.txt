@@ -74,11 +74,121 @@ Erst unfall_data mit Metadaten_Geographie mappen (eindeutig eine stationsid zuwe
 Dann über zeit und stationsid mit gemessenen daten verbinden
 
 
-1. erstelle tabelle, wo alle spalten von unfall_data mit geographie gemappt sind
-2. zusätzlich noch eine entfernungs spalte
-3. sortiere nach ID von unfall data und
+###########################################################################
+################ Combine unfall_data with Stations_ID #####################
+###########################################################################
+
+SELECT a.*, b.Stations_ID, b.Von_Datum, b.Bis_Datum, b."Geogr.Breite", b."Geogr.Laenge", SQRT(POWER((b."Geogr.Breite" - a.YGCSWGS84), 2) + POWER((b."Geogr.Laenge" - a.XGCSWGS84), 2)) as distance
+FROM unfall_data AS a
+LEFT JOIN Metadaten_Geographie AS b
+ON (CASE WHEN a.UJAHR > strftime('%Y', b.Von_Datum) THEN TRUE
+    ELSE (CASE WHEN a.UJAHR = strftime('%Y', b.Von_Datum) THEN (CASE WHEN a.UMONAT > strftime('%m', b.Von_Datum) THEN TRUE
+    	ELSE FALSE END)
+    	ELSE FALSE END) END)
+AND (CASE WHEN b.Bis_Datum NOT NULL THEN (CASE WHEN a.UJAHR < strftime('%Y', b.Bis_Datum) THEN TRUE
+    ELSE (CASE WHEN a.UJAHR = strftime('%Y', b.bis_Datum) THEN (CASE WHEN a.UMONAT < strftime('%m', b.Bis_Datum) THEN TRUE
+    	ELSE FALSE END)
+    	ELSE FALSE END) END)
+ELSE TRUE END)
+ORDER BY a.ID, distance
+
+FORMATIERT =====>
+
+SELECT a.*,
+       b.Stations_ID,
+       b.Von_Datum,
+       b.Bis_Datum,
+       b.[Geogr.Breite],
+       b.[Geogr.Laenge],
+       SQRT(POWER( (b.[Geogr.Breite] - a.YGCSWGS84), 2) + POWER( (b.[Geogr.Laenge] - a.XGCSWGS84), 2) ) AS distance
+  FROM unfall_data AS a
+       LEFT JOIN
+       Metadaten_Geographie AS b ON (CASE WHEN a.UJAHR > strftime('%Y', b.Von_Datum) THEN TRUE ELSE (CASE WHEN a.UJAHR = strftime('%Y', b.Von_Datum) THEN (CASE WHEN a.UMONAT > strftime('%m', b.Von_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) AND 
+                                    (CASE WHEN b.Bis_Datum NOT NULL THEN (CASE WHEN a.UJAHR < strftime('%Y', b.Bis_Datum) THEN TRUE ELSE (CASE WHEN a.UJAHR = strftime('%Y', b.bis_Datum) THEN (CASE WHEN a.UMONAT < strftime('%m', b.Bis_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) ELSE TRUE END) 
+ ORDER BY a.ID,
+          distance;
+
+FERTIGE ABFRAGE =====>
 
 SELECT *
-FROM unfall_data AS a
-JOIN Metadaten_Geographie AS b
-ON a.XGCSWGS84 
+  FROM (
+           SELECT a.*,
+                  b.Stations_ID,
+                  SQRT(POWER( (b.[Geogr.Breite] - a.YGCSWGS84), 2) + POWER( (b.[Geogr.Laenge] - a.XGCSWGS84), 2) ) AS distance
+             FROM unfall_data AS a
+                  LEFT JOIN
+                  Metadaten_Geographie AS b ON (CASE WHEN a.UJAHR > strftime('%Y', b.Von_Datum) THEN TRUE ELSE (CASE WHEN a.UJAHR = strftime('%Y', b.Von_Datum) THEN (CASE WHEN a.UMONAT > strftime('%m', b.Von_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) AND 
+                                               (CASE WHEN b.Bis_Datum NOT NULL THEN (CASE WHEN a.UJAHR < strftime('%Y', b.Bis_Datum) THEN TRUE ELSE (CASE WHEN a.UJAHR = strftime('%Y', b.bis_Datum) THEN (CASE WHEN a.UMONAT < strftime('%m', b.Bis_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) ELSE TRUE END) 
+            ORDER BY a.ID,
+                     distance
+       )
+ GROUP BY ID;
+//wenn jahr größer ist, dann reicht das.
+//sonst prüfe ob es gleich ist
+//Da wir keinen Tag haben, nehmen wir immer worst case (erster bzw. letzter tag des monats)
+//Da wir von worst case ausgehen, muss der monat immer größer bzw. kleiner sein
+
+
+CREATE TABLE unfall_Geographie_data (
+    ID          INTEGER PRIMARY KEY AUTOINCREMENT,
+    UGEMEINDE   INTEGER,
+    UJAHR       INTEGER,
+    UMONAT      INTEGER,
+    USTUNDE     INTEGER,
+    UWOCHENTAG  INTEGER,
+    UKATEGORIE  INTEGER,
+    UART        INTEGER,
+    UTYP1       INTEGER,
+    ULICHTVERH  INTEGER,
+    IstRad      INTEGER,
+    IstPKW      INTEGER,
+    IstFuss     INTEGER,
+    IstKrad     INTEGER,
+    IstGkfz     INTEGER,
+    IstSonstige INTEGER,
+    LINREFX     REAL,
+    LINREFY     REAL,
+    XGCSWGS84   REAL,
+    YGCSWGS84   REAL,
+    STRZUSTAND  INTEGER,
+    Stations_ID INTEGER,
+    Distance    REAL
+);
+
+INSERT INTO unfall_Geographie_data SELECT *
+                                     FROM (
+                                              SELECT a.*,
+                                                     b.Stations_ID,
+                                                     SQRT(POWER( (b.[Geogr.Breite] - a.YGCSWGS84), 2) + POWER( (b.[Geogr.Laenge] - a.XGCSWGS84), 2) ) AS Distance
+                                                FROM unfall_data AS a
+                                                     LEFT JOIN
+                                                     Metadaten_Geographie AS b ON (CASE WHEN a.UJAHR > strftime('%Y', b.Von_Datum) THEN TRUE ELSE (CASE WHEN a.UJAHR = strftime('%Y', b.Von_Datum) THEN (CASE WHEN a.UMONAT > strftime('%m', b.Von_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) AND 
+                                                                                  (CASE WHEN b.Bis_Datum NOT NULL THEN (CASE WHEN a.UJAHR < strftime('%Y', b.Bis_Datum) THEN TRUE ELSE (CASE WHEN a.UJAHR = strftime('%Y', b.bis_Datum) THEN (CASE WHEN a.UMONAT < strftime('%m', b.Bis_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) ELSE TRUE END) 
+                                               ORDER BY a.ID,
+                                                        Distance
+                                          )
+                                    GROUP BY ID;
+
+//use python script to get each row 4 times with new spezific dates
+
+###########################################################################
+################ Combine unfall_data with measurements ####################
+###########################################################################
+
+
+
+
+//TEMP SOLUTION!!!
+SELECT *
+FROM (SELECT a.*,
+                  b.Stations_ID,
+		  b.Von_Datum,
+		  b.Bis_Datum,
+                  SQRT(POWER( (b.[Geogr.Breite] - a.YGCSWGS84), 2) + POWER( (b.[Geogr.Laenge] - a.XGCSWGS84), 2) ) AS Distance
+             FROM unfall_data AS a
+                  CROSS JOIN Metadaten_Geographie AS b
+            ORDER BY a.ID,
+                     Distance)
+WHERE (CASE WHEN UJAHR > strftime('%Y', Von_Datum) THEN TRUE ELSE (CASE WHEN UJAHR = strftime('%Y', Von_Datum) THEN (CASE WHEN UMONAT > strftime('%m', Von_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) AND 
+                                                                                  (CASE WHEN Bis_Datum NOT NULL THEN (CASE WHEN UJAHR < strftime('%Y', Bis_Datum) THEN TRUE ELSE (CASE WHEN UJAHR = strftime('%Y', bis_Datum) THEN (CASE WHEN UMONAT < strftime('%m', Bis_Datum) THEN TRUE ELSE FALSE END) ELSE FALSE END) END) ELSE TRUE END) 
+GROUP BY ID

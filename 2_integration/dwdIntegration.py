@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from calendar import monthrange
 
 
 def getVarLength(file, header_length):
@@ -1482,6 +1483,84 @@ def writeUnfalldatenInDatabase(db_name):
     con.close()
 
 
+def fixDateOfUnfalldaten(db_name):
+    # open and (if not exists) create database file
+    con = sqlite3.connect(db_name)
+    cur = con.cursor()
+
+    # create new table
+    cur.execute("CREATE TABLE unfall_Geographie_data_2 (" +
+                "ID          INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "UGEMEINDE   INTEGER," +
+                "UJAHR       INTEGER," +
+                "UMONAT      INTEGER," +
+                "USTUNDE     INTEGER," +
+                "UTAG  INTEGER," +
+                "UKATEGORIE  INTEGER," +
+                "UART        INTEGER," +
+                "UTYP1       INTEGER," +
+                "ULICHTVERH  INTEGER," +
+                "IstRad      INTEGER," +
+                "IstPKW      INTEGER," +
+                "IstFuss     INTEGER," +
+                "IstKrad     INTEGER," +
+                "IstGkfz     INTEGER," +
+                "IstSonstige INTEGER," +
+                "LINREFX     REAL," +
+                "LINREFY     REAL," +
+                "XGCSWGS84   REAL," +
+                "YGCSWGS84   REAL," +
+                "STRZUSTAND  INTEGER," +
+                "Stations_ID INTEGER," +
+                "Distance    REAL" +
+                ");")
+
+    insert_table = "INSERT INTO unfall_Geographie_data_2 ( ID, UGEMEINDE, UJAHR, UMONAT, USTUNDE, UTAG, UKATEGORIE, UART, UTYP1, ULICHTVERH, IstRad, IstPKW, IstFuss, IstKrad, IstGkfz, IstSonstige, LINREFX, LINREFY, XGCSWGS84, YGCSWGS84, STRZUSTAND, Stations_ID, Distance ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )"
+
+    # load unfall data
+    cur.execute("SELECT * FROM Metadaten_Parameter")
+
+    rows = cur.fetchall()
+
+    for row in rows:
+        month_days = monthrange(row[2], row[3])
+        counter = 0
+        days = []
+
+        # calculate what to add
+        if(month_days[0] > row[5]):
+            counter = (7 - (month_days[0] + 1)) + (row[5] + 1) + 1
+            while(counter <= month_days[1]):
+                days.append(counter)
+                counter += 7
+        elif(month_days[0] == row[5]):
+            counter = 1
+            while(counter <= month_days[1]):
+                days.append(counter)
+                counter += 7
+        else:
+            counter = (row[5] - month_days[0]) + 1
+            while(counter <= month_days[1]):
+                days.append(counter)
+                counter += 7
+
+        for day in days:
+            next_row = []
+            for i, data in enumerate(row):
+                if(i == 5):
+                    next_row.append(day)
+                else:
+                    next_row.append(data)
+
+            cur.execute(insert_table, next_row)
+
+    # Save (commit) the changes
+    con.commit()
+
+    # close the database connection
+    con.close()
+
+
 if __name__ == "__main__":
     # example link
     # 0                                            1
@@ -1525,4 +1604,8 @@ if __name__ == "__main__":
     # createMetadaten_Geographie()
 
     # Add Unfalldaten
-    writeUnfalldatenInDatabase("weather_data.db")
+    # writeUnfalldatenInDatabase("weather_data.db")
+	
+	
+    # Test1
+    fixDateOfUnfalldaten("weather_data.db")
