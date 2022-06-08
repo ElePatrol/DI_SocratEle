@@ -1489,7 +1489,7 @@ def fixDateOfUnfalldaten(db_name):
     cur = con.cursor()
 
     # create new table
-    cur.execute("CREATE TABLE unfall_Geographie_data_2 (" +
+    cur.execute("CREATE TABLE IF NOT EXISTS unfall_Geographie_data_2 (" +
                 "ID          INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "UGEMEINDE   INTEGER," +
                 "UJAHR       INTEGER," +
@@ -1515,10 +1515,10 @@ def fixDateOfUnfalldaten(db_name):
                 "Distance    REAL" +
                 ");")
 
-    insert_table = "INSERT INTO unfall_Geographie_data_2 ( ID, UGEMEINDE, UJAHR, UMONAT, USTUNDE, UTAG, UKATEGORIE, UART, UTYP1, ULICHTVERH, IstRad, IstPKW, IstFuss, IstKrad, IstGkfz, IstSonstige, LINREFX, LINREFY, XGCSWGS84, YGCSWGS84, STRZUSTAND, Stations_ID, Distance ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )"
+    insert_table = "INSERT INTO unfall_Geographie_data_2 ( UGEMEINDE, UJAHR, UMONAT, USTUNDE, UTAG, UKATEGORIE, UART, UTYP1, ULICHTVERH, IstRad, IstPKW, IstFuss, IstKrad, IstGkfz, IstSonstige, LINREFX, LINREFY, XGCSWGS84, YGCSWGS84, STRZUSTAND, Stations_ID, Distance ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )"
 
     # load unfall data
-    cur.execute("SELECT * FROM Metadaten_Parameter")
+    cur.execute("SELECT * FROM unfall_Geographie_data")
 
     rows = cur.fetchall()
 
@@ -1549,7 +1549,7 @@ def fixDateOfUnfalldaten(db_name):
             for i, data in enumerate(row):
                 if(i == 5):
                     next_row.append(day)
-                else:
+                elif(i != 0):
                     next_row.append(data)
 
             cur.execute(insert_table, next_row)
