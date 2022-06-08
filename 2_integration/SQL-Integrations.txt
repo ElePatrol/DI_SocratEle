@@ -403,17 +403,29 @@ CREATE TABLE unfall_Geographie_data_3 (
     YGCSWGS84      REAL,
     XGCSWGS84      REAL,
     TT_TU          REAL,
-    RF_TU          INTEGER,
+    RF_TU          INTEGER
 );
 
-SELECT a.UJAHR, a.UMONAT, a.USTUNDE, a.UTAG, a.UKATEGORIE, a.UART, a.UTYP1, a.ULICHTVERH, a.STRZUSTAND, a.YGCSWGS84, a.XGCSWGS84, b.TT_TU, b.FR_TU
-FROM unfall_Geographie_data_2 AS a
-INNER JOIN air_temperature AS b
-ON a.Stations_ID = b.Stations_ID
-AND a.UJAHR = strftime('%Y', b.MESS_DATUM)
-AND a.UMONAT = strftime('%m', b.MESS_DATUM)
-AND a.UTAG = strftime('%d', b.MESS_DATUM)
-AND a.USTUNDE = strftime('%H', b.MESS_DATUM)
+INSERT INTO unfall_Geographie_data_3 SELECT a.UJAHR,
+       a.UMONAT,
+       a.USTUNDE,
+       a.UTAG,
+       a.UKATEGORIE,
+       a.UART,
+       a.UTYP1,
+       a.ULICHTVERH,
+       a.STRZUSTAND,
+       a.YGCSWGS84,
+       a.XGCSWGS84,
+       b.TT_TU,
+       b.RF_TU
+  FROM unfall_Geographie_data_2 AS a
+       INNER JOIN
+       air_temperature AS b ON a.Stations_ID = b.Stations_ID AND 
+                               a.UJAHR = strftime('%Y', b.MESS_DATUM) AND 
+                               a.UMONAT = strftime('%m', b.MESS_DATUM) AND 
+                               a.UTAG = strftime('%d', b.MESS_DATUM) AND 
+                               a.USTUNDE = strftime('%H', b.MESS_DATUM);
 
 
 ###########################################################################

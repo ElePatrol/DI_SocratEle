@@ -209,7 +209,7 @@ def writeAllDataInDatabase(db_name):
         "MESS_DATUM": 4,
         "QN_9": 1,
         "TT_TU": 2,
-        "RF_TU": 2
+        "RF_TU": 1
     }
     index_air_temperature = {
         0: 0,
@@ -351,7 +351,7 @@ def writeAllDataInDatabase(db_name):
         "ABSF_STD": 2,
         "VP_STD": 2,
         "TF_STD": 2,
-        "P_STD": 2,
+        "P_STD": 1,
         "TT_STD": 2,
         "RF_STD": 2,
         "TD_STD": 2
@@ -457,8 +457,8 @@ def writeAllDataInDatabase(db_name):
         "MESS_DATUM": 4,
         "QN_592": 1,
         "ATMO_LBERG": 1,
-        "FD_LBERG": 2,
-        "FG_LBERG": 2,
+        "FD_LBERG": 1,
+        "FG_LBERG": 1,
         "SD_LBERG": 1,
         "ZENIT": 4,
         "MESS_DATUM_WOZ": 1
@@ -486,7 +486,7 @@ def writeAllDataInDatabase(db_name):
         "Stations_ID": 1,
         "MESS_DATUM": 4,
         "QN_7": 1,
-        "SD_SO": 2
+        "SD_SO": 1
     }
     index_sun = {
         0: 0,
@@ -594,11 +594,6 @@ def writeAllDataInDatabase(db_name):
 
 def dataToDatabase(db_name, header, index, file, db_cur):
     print("Start processing:", db_name)
-    utmConverter = Proj(proj='utm', zone=32, ellps='WGS84', units='m',
-                        preserve_units=False)
-    lon = 0
-    lon_indx = 0
-    lat = 0
     create_table = "CREATE TABLE IF NOT EXISTS " + \
         db_name + " (ID INTEGER PRIMARY KEY AUTOINCREMENT, "
 
@@ -1495,7 +1490,7 @@ def fixDateOfUnfalldaten(db_name):
                 "UJAHR       INTEGER," +
                 "UMONAT      INTEGER," +
                 "USTUNDE     INTEGER," +
-                "UTAG  INTEGER," +
+                "UTAG        INTEGER," +
                 "UKATEGORIE  INTEGER," +
                 "UART        INTEGER," +
                 "UTYP1       INTEGER," +
@@ -1514,7 +1509,7 @@ def fixDateOfUnfalldaten(db_name):
                 "Stations_ID INTEGER" +
                 ");")
 
-    insert_table = "INSERT INTO unfall_Geographie_data_2 ( UGEMEINDE, UJAHR, UMONAT, USTUNDE, UTAG, UKATEGORIE, UART, UTYP1, ULICHTVERH, IstRad, IstPKW, IstFuss, IstKrad, IstGkfz, IstSonstige, LINREFX, LINREFY, XGCSWGS84, YGCSWGS84, STRZUSTAND, Stations_ID, Distance ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )"
+    insert_table = "INSERT INTO unfall_Geographie_data_2 ( UGEMEINDE, UJAHR, UMONAT, USTUNDE, UTAG, UKATEGORIE, UART, UTYP1, ULICHTVERH, IstRad, IstPKW, IstFuss, IstKrad, IstGkfz, IstSonstige, LINREFX, LINREFY, XGCSWGS84, YGCSWGS84, STRZUSTAND, Stations_ID ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )"
 
     # load unfall data
     cur.execute("SELECT * FROM unfall_Geographie_data")
@@ -1548,7 +1543,7 @@ def fixDateOfUnfalldaten(db_name):
             for i, data in enumerate(row):
                 if(i == 5):
                     next_row.append(day)
-                elif(i != 0):
+                elif((i != 0) and (i != 22)):
                     next_row.append(data)
 
             cur.execute(insert_table, next_row)
@@ -1604,7 +1599,6 @@ if __name__ == "__main__":
 
     # Add Unfalldaten
     # writeUnfalldatenInDatabase("weather_data.db")
-	
-	
+
     # Test1
     fixDateOfUnfalldaten("weather_data.db")
