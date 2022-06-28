@@ -215,7 +215,7 @@ CREATE TABLE unfall_Geographie_data_3 (
     FG_LBERG       INTEGER,
     SD_LBERG       INTEGER,
     ZENIT          DATE,
-    MESS_DATUM_WOZ INTEGER,
+    MESS_DATUM_WOZ DATE
     SD_SO          INTEGER,
     V_VV_I         TEXT,
     V_VV           INTEGER,
